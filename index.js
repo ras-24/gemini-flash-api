@@ -2,10 +2,14 @@ import "dotenv/config";
 import express from "express";
 import multer from "multer";
 import fs from "fs/promises";
+import cors from "cors";
+import path from "path";
 import { GoogleGenAI } from "@google/genai";
 
 const app = express();
-const upload = multer();
+const upload = multer({
+  dest: "uploads/"
+});
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // **Set your default Gemini model here:**
