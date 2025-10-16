@@ -77,9 +77,13 @@ All four API endpoints have been thoroughly tested using **Postman** to ensure t
 - Receiving successful JSON responses from the server.
 
 ### Generate Text
+![Screenshot 2025-10-16 093122](https://github.com/user-attachments/assets/d88bea65-04ba-43aa-9553-20247494be80)
 
 ### Generate from Image
+![Screenshot 2025-10-16 092855](https://github.com/user-attachments/assets/d68e0800-9186-4bae-aaa3-f5a12b03b0ea)
 
 ### Generate from Document
+![Screenshot 2025-10-16 093507](https://github.com/user-attachments/assets/fa01341a-f322-47e9-8763-44b0376496f5)
 
 ### Generate from Audio
+![Screenshot 2025-10-16 100033](https://github.com/user-attachments/assets/588feeeb-1b7b-408b-ad96-b47becf9abdc)
