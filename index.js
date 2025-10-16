@@ -2,10 +2,14 @@ import "dotenv/config";
 import express from "express";
 import multer from "multer";
 import fs from "fs/promises";
+import cors from "cors";
+import path from "path";
 import { GoogleGenAI } from "@google/genai";
 
 const app = express();
-const upload = multer();
+const upload = multer({
+  dest: "uploads/",
+});
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // **Set your default Gemini model here:**
@@ -25,6 +29,7 @@ function extractText(resp) {
   }
 }
 
+app.use(cors());
 app.use(express.json());
 
 // 1. Generate Text
@@ -43,19 +48,33 @@ app.post("/generate-text", async (req, res) => {
 
 // 2. Generate from Image
 app.post("/generate-from-image", upload.single("image"), async (req, res) => {
+  const filePath = req.file?.path;
   try {
+    if (!filePath) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
     const { prompt } = req.body;
-    const imageBase64 = req.file.buffer.toString("base64");
+    const image = await ai.files.upload({
+      file: filePath,
+      config: {
+        mimeType: req.file.mimetype,
+      },
+    });
+
     const resp = await ai.models.generateContent({
       model: GEMINI_MODEL,
       contents: [
-        { text: prompt },
-        { inlineData: { mimeType: req.file.mimetype, data: imageBase64 } },
+        { text: prompt || "What's in this picture?" },
+        {
+          fileData: { mimeType: image.mimeType, fileUri: image.uri },
+        },
       ],
     });
     res.json({ result: extractText(resp) });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  } finally {
+    if (filePath) await fs.unlink(filePath);
   }
 });
 
@@ -64,40 +83,85 @@ app.post(
   "/generate-from-document",
   upload.single("document"),
   async (req, res) => {
+    const filePath = req.file?.path;
     try {
+      if (!filePath) {
+        return res.status(400).json({ error: "No file uploaded." });
+      }
       const { prompt } = req.body;
-      const documentBase64 = req.file.buffer.toString("base64");
+      const documentFile = await ai.files.upload({
+        file: filePath,
+        config: { mimeType: req.file.mimetype },
+      });
       const resp = await ai.models.generateContent({
         model: GEMINI_MODEL,
         contents: [
-          { text: prompt || "Ringkas dokumen berikut:" },
-          { inlineData: { mimeType: req.file.mimetype, data: documentBase64 } },
+          { text: prompt || "Summarize this document:" },
+          {
+            fileData: {
+              mimeType: documentFile.mimeType,
+              fileUri: documentFile.uri,
+            },
+          },
         ],
       });
       res.json({ result: extractText(resp) });
     } catch (err) {
       res.status(500).json({ error: err.message });
+    } finally {
+      if (filePath) await fs.unlink(filePath);
     }
   }
 );
 
 // 4. Generate from Audio
 app.post("/generate-from-audio", upload.single("audio"), async (req, res) => {
+  const filePath = req.file?.path;
   try {
+    if (!filePath) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
     const { prompt } = req.body;
-    const audioBase64 = req.file.buffer.toString("base64");
+    let mimeType = req.file.mimetype;
+    if (
+      path.extname(req.file.originalname).toLowerCase() === ".mp3" &&
+      mimeType !== "audio/mpeg"
+    ) {
+      console.warn(
+        `Multer reported MIME type as ${mimeType} for .mp3. Overriding to audio/mpeg.`
+      );
+      mimeType = "audio/mpeg";
+    }
+
+    const audioFile = await ai.files.upload({
+      file: filePath,
+      config: { mimeType: mimeType },
+    });
     const resp = await ai.models.generateContent({
       model: GEMINI_MODEL,
       contents: [
-        { text: prompt || "Transkrip audio berikut:" },
-        { inlineData: { mimeType: req.file.mimetype, data: audioBase64 } },
+        { text: prompt || "Transcribe this audio:" },
+        { fileData: { mimeType: audioFile.mimeType, fileUri: audioFile.uri } },
       ],
     });
     res.json({ result: extractText(resp) });
   } catch (err) {
     res.status(500).json({ error: err.message });
+    console.error("Error in /generate-from-audio:", err);
+    if (filePath) {
+      try {
+        await fs.unlink(filePath);
+        console.log(`Cleaned up temporary file: ${filePath}`);
+      } catch (unlinkErr) {
+        console.error(
+          `Error cleaning up temporary file ${filePath}:`,
+          unlinkErr
+        );
+      }
+    }
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server ready on http://localhost:${PORT}`));
