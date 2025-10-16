@@ -34,6 +34,40 @@ This API server provides the following capabilities, accessible through distinct
 - **File Handling**: `multer` for processing multipart/form-data uploads
 - **Environment**: `dotenv` for managing API keys and configuration
 
+## 🚀 Getting Started
+
+Follow these steps to clone the repository and run the project on your local machine.
+
+### Prerequisites
+
+- Node.js (v18 or later recommended)
+- Git
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/ras-24/gemini-flash-api.git
+    ```
+2.  **Navigate to the project directory:**
+    ```bash
+    cd gemini-flash-api
+    ```
+3.  **Install the dependencies:**
+    ```bash
+    npm install
+    ```
+4.  **Create an environment file:**
+    Create a `.env` file in the root of the project and add your Google Gemini API key:
+    ```
+    GEMINI_API_KEY="YOUR_API_KEY_HERE"
+    ```
+5.  **Start the server:**
+    ```bash
+    npm start
+    ```
+The server will start and be accessible at `http://localhost:3000`.
+
 ## ✅ Testing with Postman
 
 All four API endpoints have been thoroughly tested using **Postman** to ensure they are fully functional and behave as expected. The tests covered:
@@ -42,4 +76,10 @@ All four API endpoints have been thoroughly tested using **Postman** to ensure t
 - Uploading image, document, and audio files.
 - Receiving successful JSON responses from the server.
 
-_Screenshots of the successful Postman requests and responses for each endpoint will be attached to demonstrate functionality._
+### Generate Text
+
+### Generate from Image
+
+### Generate from Document
+
+### Generate from Audio

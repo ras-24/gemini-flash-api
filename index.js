@@ -148,20 +148,19 @@ app.post("/generate-from-audio", upload.single("audio"), async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
     console.error("Error in /generate-from-audio:", err);
+  } finally {
     if (filePath) {
-      try {
-        await fs.unlink(filePath);
-        console.log(`Cleaned up temporary file: ${filePath}`);
-      } catch (unlinkErr) {
-        console.error(
-          `Error cleaning up temporary file ${filePath}:`,
-          unlinkErr
+      await fs
+        .unlink(filePath)
+        .catch((unlinkErr) =>
+          console.error(
+            `Error cleaning up temporary file ${filePath}:`,
+            unlinkErr
+          )
         );
-      }
     }
   }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server ready on http://localhost:${PORT}`));
