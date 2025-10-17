@@ -42,6 +42,7 @@ Follow these steps to clone the repository and run the project on your local mac
 
 - Node.js (v18 or later recommended)
 - Git
+- A Google Gemini API Key. You can get one from [Google AI Studio](https://aistudio.google.com/u/0/api-keys).
 
 ### Installation & Setup
 
